@@ -4,7 +4,9 @@ import { scaleLinear, scaleQuantile } from "d3-scale";
 import { nest } from "d3-collection";
 import { min, max, mean, extent } from "d3-array";
 
-select("body").append("h1").text("Teste de valores estatísticos sobre população");
+select("body")
+  .append("h1")
+  .text("Teste de valores estatísticos sobre população");
 
 // --------------- Trabalhando com scales métodos (linear e quantile) ----------------
 // let newRamp = scaleLinear().domain([500000, 13000000]).range([0, 500]);
@@ -101,6 +103,11 @@ let tweets = require("./data/tweets.json");
 
 // ------------------ Criando bar char apartir de dados externos -------------------------------
 
+csv(require("./data/cities.csv")).then((data) => {
+  let parent = "svg";
+  dataViz(data, parent);
+});
+
 function criandoYScale(data) {
   let maximo = max(data, (el) => {
     return +el.population;
@@ -112,10 +119,11 @@ function criandoYScale(data) {
   let yScale = scaleLinear().domain([minimo, maximo]).range([0, 500]);
   return yScale;
 }
-function dataViz(incomingData) {
+
+function dataViz(incomingData, parent) {
   let yScale = criandoYScale(incomingData);
 
-  select("svg")
+  select(parent)
     .selectAll("rect")
     .data(incomingData)
     .enter()
@@ -134,6 +142,39 @@ function dataViz(incomingData) {
     .style("fill", "#ef767a");
 }
 
-csv(require("./data/cities.csv")).then((data) => {
-  dataViz(data);
-});
+// ------------------ Criando bar char apartir de array e usando polylinear scales -------------------------------
+
+let lista = [14, 68, 24500, 430, 19, 1000, 5555];
+let parent = "svg.segundo-graph";
+
+function criandoPolynearScale(data) {
+  let yScale = scaleLinear()
+    .domain([0, 100, 1000, 24500])
+    .range([0, 100, 200, 400]);
+
+  return yScale;
+}
+
+function dataVizSecond(data, parent) {
+  let yScale = criandoPolynearScale(data);
+
+  select(parent)
+    .selectAll("rect")
+    .data(data)
+    .enter()
+    .append("rect")
+    .attr("class", "num")
+    .attr("height", (d) => {
+      return yScale(d);
+    })
+    .attr("width", 20)
+    .attr("x", (d, i) => {
+      return i * 25;
+    })
+    .attr("y", (d) => {
+      return 500 - yScale(d);
+    })
+    .style("fill", "#28536b");
+}
+
+dataVizSecond(lista, parent);
