@@ -101,7 +101,7 @@ let tweets = require("./data/tweets.json");
 
 // dataViz(array);
 
-// ------------------ Criando bar char apartir de dados externos -------------------------------
+// ------------------ Criando bar char apartir de dados externos -----------------------------
 
 csv(require("./data/cities.csv")).then((data) => {
   let parent = "svg";
@@ -142,7 +142,7 @@ function dataViz(incomingData, parent) {
     .style("fill", "#ef767a");
 }
 
-// ------------------ Criando bar char apartir de array e usando polylinear scales -------------------------------
+// ------------------ Criando bar char apartir de array e usando polylinear scales -----------------
 
 let lista = [14, 68, 24500, 430, 19, 1000, 5555];
 let parent = "svg.segundo-graph";
@@ -178,3 +178,51 @@ function dataVizSecond(data, parent) {
 }
 
 dataVizSecond(lista, parent);
+
+// ------------------ Criando bar char apartir de objetos json usando nested scale --------------
+
+let parent2 = "svg.terceiro-graph";
+
+function criandoYScaleTweets(incomingData) {
+  let maxTweet = max(incomingData, (el) => {
+    return el.numTweets;
+  });
+  
+  let yScale = scaleLinear().domain([0, maxTweet]).range([0, 500]);
+
+  return yScale;
+}
+
+function dataVizThird(incomingData, parent) {
+  let nestedTweets = nest()
+    .key((el) => {
+      return el.user;
+    })
+    .entries(incomingData);
+
+    
+    nestedTweets.forEach((el) => {
+      el.numTweets = el.values.length;
+    });
+    
+  let yScale = criandoYScaleTweets(nestedTweets);
+
+  select(parent)
+    .selectAll("rect")
+    .data(nestedTweets)
+    .enter()
+    .append("rect")
+    .attr("height", (d) => {
+      return yScale(d.numTweets);
+    })
+    .attr("width", 50)
+    .attr("x", (d, i) => {
+      return i * 60;
+    })
+    .attr("y", (d) => {
+      return 500 - yScale(d.numTweets);
+    })
+    .style("fill", "#bb4430");
+}
+
+dataVizThird(tweets.tweets, parent2);
